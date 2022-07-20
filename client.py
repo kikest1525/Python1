@@ -11,8 +11,12 @@ client.connect(('127.0.0.1', 55555))
 # Thread that writes new messages
 def write():
 	while True:
-		message = input()
-		client.send(message.encode('ascii'))
+		try:
+			message = input()
+			client.send(message.encode('ascii'))
+		except Exception as e:
+			print(e)
+			sys.exit()
 
 # Thread that receives incoming messages
 def receive():
@@ -31,8 +35,8 @@ def receive():
 
 # Handle the user pressing CTRL+C to exit
 def signal_handler(sig, frame):
-	print('You pressed Ctrl+C!')
-	sys.exit(0)
+	print('You pressed Ctrl+C! Goodbye.\n')
+	sys.exit()
 
 signal.signal(signal.SIGINT, signal_handler)
 

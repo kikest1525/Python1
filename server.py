@@ -16,8 +16,13 @@ names = []
 
 # Broadcast a message to every user
 def broadcast(name, message):
+	byteMessage = message
+	if name != '':
+		byteMessage = (name + ': ').encode('ascii') + byteMessage
+	print(byteMessage.decode('ascii'))
+
 	for client in clients:
-		client.send(name.encode('ascii') + message)
+		client.send(byteMessage)
 
 # Each user gets an individual thread
 def listenToUser(client):
@@ -32,9 +37,9 @@ def listenToUser(client):
 			clients.remove(client)
 			client.close()
 			name = names[index]
-			broadcast(f'{name} left the chat'.encode('ascii'))
+			broadcast('', f'{name} left the chat'.encode('ascii'))
 			names.remove(name)
-			broadcast(f'Users online: [{", ".join(names)}]'.encode('ascii'))
+			broadcast('', f'Users online: [{", ".join(names)}]'.encode('ascii'))
 			break
 
 # Listen for incoming connection requests
@@ -47,19 +52,12 @@ def receive():
 		names.append(name)
 		clients.append(client)
 
-		broadcast(f'User joined the chat: {name}'.encode('ascii'))
+		broadcast('', f'User joined the chat: {name}\n'.encode('ascii'))
 		client.send('Connected to the server!'.encode('ascii'))
 
 		# Upon successfully connecting, set a thread that listens to that user
 		thread = threading.Thread(target=listenToUser, args=(client,))
 		thread.start()
-
-# Handle the user pressing CTRL+C to exit
-def signal_handler(sig, frame):
-	print('You pressed Ctrl+C!')
-	sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
 
 print('Server is listening...')
 receive()
